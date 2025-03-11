@@ -1,0 +1,38 @@
+.
+├── Procfile
+├── README.md
+├── package.json
+├── public
+│   ├── css
+│   │   ├── admin.css
+│   │   ├── employee.css
+│   │   ├── login.css
+│   │   └── style.css
+│   ├── img
+│   │   └── logo.png
+│   └── js
+│       ├── admin.js
+│       ├── config.js
+│       ├── employee.js
+│       └── login.js
+├── server
+│   ├── config
+│   │   └── db.js
+│   ├── models
+│   │   ├── Attendance.js
+│   │   ├── Employee.js
+│   │   ├── LeaveRequest.js
+│   │   └── Notification.js
+│   ├── routes
+│   │   ├── admin.js
+│   │   ├── auth.js
+│   │   └── employee.js
+│   ├── seed.js
+│   └── server.js
+├── structure.txt
+└── views
+    ├── admin.html
+    ├── employee.html
+    └── login.html
+
+10 directories, 26 files
