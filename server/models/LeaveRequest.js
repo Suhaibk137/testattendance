@@ -8,7 +8,13 @@ const leaveRequestSchema = mongoose.Schema({
   },
   leaveDate: {
     type: Date,
-    required: true
+    required: true,
+    validate: {
+      validator: function(v) {
+        return v != null;
+      },
+      message: 'Leave date cannot be null or undefined'
+    }
   },
   reason: {
     type: String,
