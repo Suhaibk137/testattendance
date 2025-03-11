@@ -295,6 +295,11 @@ router.post('/leave-requests/update', adminAuth, async (req, res) => {
       return res.status(404).json({ msg: 'Leave request not found' });
     }
     
+    // Validate leave date
+    if (!leaveRequest.leaveDate) {
+      return res.status(400).json({ msg: 'Leave request has invalid date' });
+    }
+    
     // Update status
     leaveRequest.status = status;
     await leaveRequest.save();
