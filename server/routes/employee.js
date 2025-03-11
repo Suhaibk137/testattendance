@@ -138,8 +138,19 @@ router.post('/leave-request', auth, async (req, res) => {
   const { leaveDate, reason } = req.body;
 
   try {
+    // Validate leave date is provided and valid
+    if (!leaveDate) {
+      return res.status(400).json({ msg: 'Leave date is required' });
+    }
+
+    // Check if date is valid
+    const parsedDate = moment(leaveDate);
+    if (!parsedDate.isValid()) {
+      return res.status(400).json({ msg: 'Invalid leave date format' });
+    }
+    
     // Format the date properly for MongoDB
-    const formattedLeaveDate = moment(leaveDate).format('YYYY-MM-DD');
+    const formattedLeaveDate = parsedDate.format('YYYY-MM-DD');
     
     // Create a leave request with properly formatted date
     const leave = new LeaveRequest({
