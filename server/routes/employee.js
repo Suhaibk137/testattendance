@@ -45,12 +45,6 @@ router.get('/me', auth, async (req, res) => {
 // @access  Private
 router.post('/check-in', auth, async (req, res) => {
   try {
-    // First, clean up any records with null dates
-    await Attendance.deleteMany({
-      employee: req.employee.id,
-      date: null
-    });
-    
     const today = moment().startOf('day');
     
     // Check if employee has already checked in today
@@ -76,10 +70,10 @@ router.post('/check-in', auth, async (req, res) => {
       return res.json(existingAttendance);
     }
 
-    // Create new attendance record - ensure date is set correctly
+    // Create new attendance record with explicit date
     const attendance = new Attendance({
       employee: req.employee.id,
-      date: today.toDate(),  // Explicitly set to today
+      date: today.toDate(),
       checkInTime: now,
       status: 'Present'
     });
@@ -138,39 +132,64 @@ router.post('/leave-request', auth, async (req, res) => {
   const { leaveDate, reason } = req.body;
 
   try {
-    // Validate leave date is provided and valid
+    // Validate inputs
     if (!leaveDate) {
       return res.status(400).json({ msg: 'Leave date is required' });
     }
+    
+    if (!reason) {
+      return res.status(400).json({ msg: 'Reason is required' });
+    }
 
-    // Check if date is valid
+    // Validate date format
     const parsedDate = moment(leaveDate);
     if (!parsedDate.isValid()) {
-      return res.status(400).json({ msg: 'Invalid leave date format' });
+      return res.status(400).json({ msg: 'Invalid date format' });
     }
-    
-    // Format the date properly for MongoDB
-    const formattedLeaveDate = parsedDate.format('YYYY-MM-DD');
-    
-    // Create a leave request with properly formatted date
-    const leave = new LeaveRequest({
+
+    // Format the date properly
+    const formattedLeaveDate = parsedDate.startOf('day').toDate();
+
+    // Check if a leave request already exists for this date
+    const existingRequest = await LeaveRequest.findOne({
       employee: req.employee.id,
-      leaveDate: new Date(formattedLeaveDate),
+      leaveDate: {
+        $gte: parsedDate.startOf('day').toDate(),
+        $lt: parsedDate.endOf('day').toDate()
+      }
+    });
+
+    if (existingRequest) {
+      return res.status(400).json({ msg: 'You already have a leave request for this date' });
+    }
+
+    // Create a new leave request
+    const leaveRequest = new LeaveRequest({
+      employee: req.employee.id,
+      leaveDate: formattedLeaveDate,
       reason
     });
 
-    await leave.save();
-
-    return res.json(leave);
+    await leaveRequest.save();
+    
+    // Create notification for the leave request submission
+    const notification = new Notification({
+      employee: req.employee.id,
+      message: `Leave request submitted for ${parsedDate.format('MMMM DD, YYYY')}. Awaiting approval.`,
+      type: 'Leave'
+    });
+    
+    await notification.save();
+    
+    res.json(leaveRequest);
   } catch (err) {
     console.error('Leave request error:', err.message);
     
-    // If it's a duplicate key error, send a meaningful message
     if (err.code === 11000) {
       return res.status(400).json({ msg: 'You already have a leave request for this date' });
     }
     
-    return res.status(500).json({ msg: 'Server error' });
+    res.status(500).json({ msg: 'Server error' });
   }
 });
 
