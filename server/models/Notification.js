@@ -23,6 +23,7 @@ const notificationSchema = mongoose.Schema({
   timestamps: true
 });
 
-const Notification = mongoose.model('Notification', notificationSchema, 'data-from-employee-dashboard');
+// Change the collection name to a separate collection specifically for notifications
+const Notification = mongoose.model('Notification', notificationSchema, 'employee_notifications');
 
 module.exports = Notification;
