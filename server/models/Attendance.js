@@ -9,7 +9,7 @@ const attendanceSchema = mongoose.Schema({
   date: {
     type: Date,
     required: true,
-    default: Date.now  // Added default value
+    default: Date.now
   },
   checkInTime: {
     type: Date
@@ -29,6 +29,7 @@ const attendanceSchema = mongoose.Schema({
 // Create a compound index to ensure one attendance record per employee per day
 attendanceSchema.index({ employee: 1, date: 1 }, { unique: true });
 
-const Attendance = mongoose.model('Attendance', attendanceSchema, 'data-from-employee-dashboard');
+// Change the collection name to a separate collection specifically for attendance
+const Attendance = mongoose.model('Attendance', attendanceSchema, 'employee_attendance');
 
 module.exports = Attendance;
