@@ -87,7 +87,7 @@ router.post('/check-in', auth, async (req, res) => {
     await attendance.save();
     res.json(attendance);
   } catch (err) {
-    console.error(err.message);
+    console.error('Check-in error:', err.message);
     res.status(500).json({ msg: 'Server error' });
   }
 });
